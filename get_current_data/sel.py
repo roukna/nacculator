@@ -1,10 +1,16 @@
+import ConfigParser
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from run_filters import *
 
-driver = webdriver.Chrome()
+def read_config(config_path):
+    config = ConfigParser.ConfigParser()
+    config.read(config_path)
+    return config
 
 config = read_config("packet_config.ini")
+driver = webdriver.Chrome()
+
+
 username = config.get('credentials','username')
 password = config.get('credentials','password')
 # Sign In credentials along with nacc url
