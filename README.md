@@ -197,3 +197,22 @@ working directory called `corrected`._
     $ edit ../nacc/uds3/ivp/forms
 
 * Resources for uds3 fvp forms are available [here](https://www.alz.washington.edu/NONMEMBER/UDS/DOCS/VER3/).
+
+HOW TO GET CURRENT_DB.CSV OR UPLOAD DATA TO NACC
+------------------------------------------------
+
+_Note: Install Chrome Driver to run Selenium on Chrome. Update pack_config.ini_
+
+Install Chrome driver using
+
+    $ brew install chromedriver
+Go to get_current_data folder and you can either upload a file or get current subjects in NACC
+
+To Upload a file run
+
+    $ Python sel.py upload
+To Get current Subjects from Nacc run
+
+    $ Python sel.py getdata
+
+* Resources for uds3 fvp forms are available [here](https://www.alz.washington.edu/NONMEMBER/UDS/DOCS/VER3/).
