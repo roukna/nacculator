@@ -201,7 +201,7 @@ working directory called `corrected`._
 HOW TO GET CURRENT_DB.CSV OR UPLOAD DATA TO NACC
 ------------------------------------------------
 
-_Note: Install Chrome Driver to run Selenium on Chrome. Update pack_config.ini_
+_Note: Install Chrome Driver to run Selenium on Chrome. Update packet_config.ini_
 
 Install Chrome driver using
 
