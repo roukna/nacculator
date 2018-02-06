@@ -27,6 +27,12 @@ def get_nacc_data(driver):
     driver.execute_script(open("./getpacket.js").read())
     return
 
+def replace_link(element, username, password):
+    link = element.get_attribute('href')
+    link = link.replace("https://","")
+    link  = "http://"+username+":"+password+"@"+link
+    return link
+
 def main(argv):
     config = read_config("packet_config.ini")
     driver = webdriver.Chrome()
@@ -40,11 +46,13 @@ def main(argv):
     driver.get(str)
     # Get the 1Florida ADRC project url
     nacc_project_elem = driver.find_element_by_xpath("/html/body/table[2]/tbody/tr[1]/td[2]/font/ul[1]/li[5]/a")
-    florida_adrc_link = nacc_project_elem.get_attribute('href')
+    florida_adrc_link = replace_link(nacc_project_elem, username, password)
+    print florida_adrc_link
     driver.get(florida_adrc_link)
     # get the uds link
     uds_project = driver.find_element_by_xpath("//*[@id='m_3subsystem_graphicC']/area[1]")
-    uds_link = uds_project.get_attribute('href')
+    uds_link = replace_link(uds_project, username, password)
+    print uds_link
     # Navigate to uds link
     driver.get(uds_link)
 
