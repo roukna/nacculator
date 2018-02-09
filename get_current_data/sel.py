@@ -1,5 +1,8 @@
 import ConfigParser
 import sys
+import pyautogui
+import time
+import requests
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
@@ -32,22 +35,53 @@ def get_nacc_data(driver):
 def replace_link(element, username, password):
     link = element.get_attribute('href')
     link = link.replace("https://","")
-    link  = "http://"+username+":"+password+"@"+link
+    link  = "https://"+username+":"+password+"@"+link
     return link
+
+def generate_report(driver,username,password):
+    print "report entered"
+    elem = driver.find_element_by_name("certc_X")
+    # Above element is Hidden. To click the hidden element we are making use of Js
+    driver.execute_script("(arguments[0]).click();", elem)
+    elem1 = driver.find_element_by_name("TYPEP")
+    driver.execute_script("(arguments[0]).click();",elem1)
+    url = driver.current_url
+    r = requests.get(url, auth=(username, password), verify=False,stream=True)
+    r.raw.decode_content = True
+    with open("file_name.pdf", 'wb') as f:
+            shutil.copyfileobj(r.raw, f)
+    # pyautogui.hotkey('ctrl', 's')
+    # time.sleep(5)
+    # pyautogui.typewrite("report1.pdf")
+    # time.sleep(5)
+    # pyautogui.hotkey('enter')
+    return
 
 def main(argv):
     config = read_config("packet_config.ini")
     try:
-        
-        driver = webdriver.Chrome()
-        options = argv
+
+
+        nacc_options = argv
         username = config.get('credentials','username')
         password = config.get('credentials','password')
         email = config.get('credentials', 'email')
         filepath = config.get('uploadpath','path')
+        downloadpath = config.get('downloadpath', 'path')
+        options = webdriver.ChromeOptions()
+        options.add_experimental_option("prefs", {
+          "download.default_directory": downloadpath,
+          "download.prompt_for_download": False,
+          "download.directory_upgrade": True,
+          "safebrowsing.enabled": True,
+          "plugins.always_open_pdf_externally": True
+        })
+        driver = webdriver.Chrome(chrome_options = options)
+        # driver.get("http://www.pdf995.com/samples/pdf.pdf")
+
 
         # Sign In credentials along with nacc url
-        str = "http://"+username+":"+password+"@www.alz.washington.edu/MEMBER/sitesub.htm"
+        str = "https://"+username+":"+password+"@www.alz.washington.edu/MEMBER/sitesub.htm"
         driver.get(str)
         # Get the 1Florida ADRC project url
         nacc_project_elem = driver.find_element_by_xpath("/html/body/table[2]/tbody/tr[1]/td[2]/font/ul[1]/li[5]/a")
@@ -58,17 +92,21 @@ def main(argv):
         uds_link = replace_link(uds_project, username, password)
         # Navigate to uds link
         driver.get(uds_link)
-
         uds_nacc_results = driver.find_element_by_xpath("//*[@id='bodytable']/form/font/b/button").click()
-        if options == "upload":
+        print "Hello"
+        if nacc_options == "upload":
+            print "Gotit"
             upload_file(driver,filepath,email)
-        if options == "getdata":
+        if nacc_options == "getdata":
             get_nacc_data(driver)
+        if nacc_options == "report":
+            generate_report(driver,username,password)
 
         driver.close()
 
     except Exception as e:
-        driver.close()
+        print e
+        # driver.close()
 
 if __name__ == '__main__':
     main(sys.argv[1])
