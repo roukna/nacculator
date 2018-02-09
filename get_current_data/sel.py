@@ -20,7 +20,8 @@ def upload_file(driver,filepath,email):
         print "errors upload new file"
     else:
         print "file uploaded Succesfully"
-        driver.find_element_by_xpath("/html/body/table[2]/tbody/tr[2]/td[2]/input").click()
+        elem = driver.find_element_by_xpath("/html/body/table[2]/tbody/tr[2]/td[2]/input")
+        driver.execute_script("(arguments[0]).click();",elem)
         driver.find_element_by_name("EMAIL").send_keys(email)
     return
 
@@ -45,16 +46,11 @@ def generate_report(driver,username,password):
     driver.execute_script("(arguments[0]).click();", elem)
     elem1 = driver.find_element_by_name("TYPEP")
     driver.execute_script("(arguments[0]).click();",elem1)
-    url = driver.current_url
-    r = requests.get(url, auth=(username, password), verify=False,stream=True)
-    r.raw.decode_content = True
-    with open("file_name.pdf", 'wb') as f:
-            shutil.copyfileobj(r.raw, f)
-    # pyautogui.hotkey('ctrl', 's')
-    # time.sleep(5)
-    # pyautogui.typewrite("report1.pdf")
-    # time.sleep(5)
-    # pyautogui.hotkey('enter')
+    pyautogui.hotkey('ctrl', 's')
+    time.sleep(5)
+    pyautogui.typewrite("report1.pdf")
+    time.sleep(5)
+    pyautogui.hotkey('enter')
     return
 
 def main(argv):
@@ -77,9 +73,6 @@ def main(argv):
           "plugins.always_open_pdf_externally": True
         })
         driver = webdriver.Chrome(chrome_options = options)
-        # driver.get("http://www.pdf995.com/samples/pdf.pdf")
-
-
         # Sign In credentials along with nacc url
         str = "https://"+username+":"+password+"@www.alz.washington.edu/MEMBER/sitesub.htm"
         driver.get(str)
@@ -93,9 +86,7 @@ def main(argv):
         # Navigate to uds link
         driver.get(uds_link)
         uds_nacc_results = driver.find_element_by_xpath("//*[@id='bodytable']/form/font/b/button").click()
-        print "Hello"
         if nacc_options == "upload":
-            print "Gotit"
             upload_file(driver,filepath,email)
         if nacc_options == "getdata":
             get_nacc_data(driver)
@@ -106,7 +97,7 @@ def main(argv):
 
     except Exception as e:
         print e
-        # driver.close()
+        driver.close()
 
 if __name__ == '__main__':
     main(sys.argv[1])
