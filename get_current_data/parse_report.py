@@ -1,11 +1,18 @@
 import sys
-
+import os
 import xml.etree.ElementTree as ET
-import csv
-import smtplib
+from email.mime.text import MIMEText
+from jinja2 import Environment
+
+import send_email as sm
 
 
-def generate_report(filename):
+def generate_report_csv(input_file):
+
+    cmd = 'pdf2txt.py -o out.xml ' + input_file
+    os.system(cmd)
+    filename = 'out.xml'
+
     tree = ET.parse(filename)
     pages = tree.getroot()
     final_result = {}
@@ -76,20 +83,50 @@ def generate_report(filename):
             result = str.replace(''.join(result), 'Asof', '')
             final_result['Date Entered'] = result
 
-        with open('report.csv', 'wb') as csv_file:
-            writer = csv.writer(csv_file)
-            for key, value in final_result.items():
-                writer.writerow([key, value])
+    print final_result
 
 
-def generate_xml(filename):
-    pass
+    TEMPLATE = """
+    <html>
+    <head>
+        <title>{{ title }}</title>
+    </head>
+    <body>
+    <table style="width:100%"; border="1">
+    <!-- table header -->
+    {% if final_result %}
+        <tr>
+            {% for key in final_result.keys() %}
+                <td> {{ key }} </td>
+            {% endfor %}
+        </tr>
+    <!-- table rows -->
+        <tr>
+            {% for value in final_result.values() %}
+                <td> {{ value }} </td>
+            {% endfor %}
+        </tr>
+    {% endif %}
+    </table>
+    <body>
+    </body>
+    </html>
+    """  # Our HTML Template
+
+    # Create a text/html message from a rendered template
+    msg = MIMEText(
+        Environment().from_string(TEMPLATE).render(
+            title='UDS REPORT',
+            final_result=final_result
+        ), "html"
+    )
+    recipient = ['rsengupta@ufl.edu', 'rouknasengupta@gmail.com']
+    sm.send_email(recipient, 'UDS REPORT', msg)
 
 
-def main(argv):
-    filename = argv
-    # TODO generate_xml(filename), pass xml filename to generate_report
-    generate_report(filename)
+def main(argc):
+    input_file = argc
+    generate_report_csv(input_file)
 
 
 if __name__ == '__main__':

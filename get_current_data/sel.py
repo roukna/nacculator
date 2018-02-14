@@ -1,15 +1,21 @@
-import ConfigParser
 import sys
-import pyautogui
+import os
+import datetime
 import time
-import requests
+
+import ConfigParser
+import pyautogui
+import shutil
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
+
+import parse_report
+
 
 def read_config(config_path):
     config = ConfigParser.ConfigParser()
     config.read(config_path)
     return config
+
 
 def upload_file(driver,filepath,email):
     elem1 = driver.find_element_by_name("UPLOADR_X")
@@ -25,6 +31,7 @@ def upload_file(driver,filepath,email):
         driver.find_element_by_name("EMAIL").send_keys(email)
     return
 
+
 def get_nacc_data(driver):
     elem = driver.find_element_by_name("FINCHK_X")
     # Above element is Hidden. To click the hidden element we are making use of Js
@@ -33,14 +40,15 @@ def get_nacc_data(driver):
     driver.execute_script(open("./getpacket.js").read())
     return
 
+
 def replace_link(element, username, password):
     link = element.get_attribute('href')
     link = link.replace("https://","")
     link  = "https://"+username+":"+password+"@"+link
     return link
 
-def generate_report(driver,username,password):
-    print "report entered"
+
+def generate_report(driver, username, password):
     elem = driver.find_element_by_name("certc_X")
     # Above element is Hidden. To click the hidden element we are making use of Js
     driver.execute_script("(arguments[0]).click();", elem)
@@ -48,16 +56,14 @@ def generate_report(driver,username,password):
     driver.execute_script("(arguments[0]).click();",elem1)
     pyautogui.hotkey('ctrl', 's')
     time.sleep(5)
-    pyautogui.typewrite("report1.pdf")
     time.sleep(5)
     pyautogui.hotkey('enter')
     return
 
+
 def main(argv):
-    config = read_config("packet_config.ini")
+    config = read_config("packet_config_example.ini")
     try:
-
-
         nacc_options = argv
         username = config.get('credentials','username')
         password = config.get('credentials','password')
@@ -91,13 +97,20 @@ def main(argv):
         if nacc_options == "getdata":
             get_nacc_data(driver)
         if nacc_options == "report":
+            new_filename = downloadpath + 'broker93_' + datetime.datetime.now().strftime("%Y%m%d") + '.pdf'
+            shutil.move(os.path.join(downloadpath, 'broker93.pdf'), new_filename)
+            # output_file = config.get('reportpath', 'path') +
+            # 'report_' + datetime.datetime.now().strftime("%Y%m%d") + '.csv'
             generate_report(driver,username,password)
+            parse_report.generate_report_csv(new_filename)
+
 
         driver.close()
 
     except Exception as e:
         print e
-        driver.close()
+        # driver.close()
+
 
 if __name__ == '__main__':
     main(sys.argv[1])
