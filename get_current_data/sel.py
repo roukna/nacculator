@@ -46,18 +46,14 @@ def generate_report(driver,username,password):
     driver.execute_script("(arguments[0]).click();", elem)
     elem1 = driver.find_element_by_name("TYPEP")
     driver.execute_script("(arguments[0]).click();",elem1)
+    # The pdf extracted is displayed in Chrome. To save it we use ctrl+s key
     pyautogui.hotkey('ctrl', 's')
     time.sleep(5)
-    pyautogui.typewrite("report1.pdf")
-    time.sleep(5)
-    pyautogui.hotkey('enter')
     return
 
 def main(argv):
     config = read_config("packet_config.ini")
     try:
-
-
         nacc_options = argv
         username = config.get('credentials','username')
         password = config.get('credentials','password')
